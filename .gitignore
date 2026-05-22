@@ -1,0 +1,26 @@
+# Build output
+/static/
+/dist/
+
+# Binaries
+/region
+/region.exe
+region-*-*
+region-*-*.exe
+
+# Go
+*.test
+*.out
+coverage.txt
+
+# Editor
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Claude
+.claude/
+
+# Tmp
+/tmp/

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>region.id — Static API for Indonesian regions</title>
+  <meta name="description" content="Static API for Indonesian administrative regions: provinces, regencies, districts, villages. Go rewrite of emsifa/api-wilayah-indonesia with HATEOAS, OpenAPI, and a modern playground." />
+  <meta name="color-scheme" content="light dark" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='8' fill='%23dc2626'/%3E%3Crect y='8' width='16' height='8' fill='white'/%3E%3C/svg%3E" />
+  <link rel="stylesheet" href="/assets/app.css" />
+</head>
+<body>
+
+<header class="hero">
+  <div class="container">
+    <div class="brand">
+      <span class="flag" aria-hidden="true"></span>
+      <span class="name">region.id</span>
+      <span class="ver" id="ver">loading…</span>
+    </div>
+    <h1>Static API for <span class="accent">Indonesian regions</span>.</h1>
+    <p class="lede">
+      Provinces → regencies → districts → villages, served as plain JSON files from a CDN.
+      Drop-in compatible with <a href="https://github.com/emsifa/api-wilayah-indonesia" rel="noopener">emsifa/api-wilayah-indonesia</a>,
+      plus HATEOAS links, OpenAPI, validation, and this playground.
+    </p>
+    <p class="stats" id="stats" aria-live="polite">
+      <span class="stat"><strong>34</strong> provinces</span>
+      <span class="stat"><strong>514</strong> regencies</span>
+      <span class="stat"><strong>7,215</strong> districts</span>
+      <span class="stat"><strong>80,534</strong> villages</span>
+    </p>
+    <p class="cta">
+      <a class="btn btn-primary" href="#playground">Try it</a>
+      <a class="btn" href="#endpoints">Endpoints</a>
+      <a class="btn btn-ghost" href="/api/openapi.json">OpenAPI ↗</a>
+    </p>
+  </div>
+</header>
+
+<main class="container">
+
+  <section id="playground" class="card">
+    <h2>Playground</h2>
+    <p class="sub">Pick an endpoint, set the IDs from cascading menus, hit Send.</p>
+
+    <div class="row">
+      <label class="field grow">
+        <span>Endpoint</span>
+        <select id="endpoint"></select>
+      </label>
+    </div>
+
+    <div class="row" id="paramRow">
+      <!-- Cascading selectors injected here -->
+    </div>
+
+    <div class="row">
+      <code class="url" id="url"></code>
+    </div>
+
+    <div class="row actions">
+      <button class="btn btn-primary" id="send">Send request</button>
+      <button class="btn" id="copyCurl">Copy as cURL</button>
+      <span class="meta-line" id="meta"></span>
+    </div>
+
+    <pre class="response" id="response" aria-live="polite"><span class="muted">No response yet.</span></pre>
+  </section>
+
+  <section id="endpoints" class="card">
+    <h2>Endpoints</h2>
+    <table class="endpoints">
+      <thead><tr><th>Path</th><th>Description</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>/api/provinces.json</code></td><td>List all provinces</td><td><a href="/api/provinces.json">view</a></td></tr>
+        <tr><td><code>/api/regencies/{provinceId}.json</code></td><td>List regencies in a province</td><td><a href="/api/regencies/11.json">view</a></td></tr>
+        <tr><td><code>/api/districts/{regencyId}.json</code></td><td>List districts in a regency</td><td><a href="/api/districts/1101.json">view</a></td></tr>
+        <tr><td><code>/api/villages/{districtId}.json</code></td><td>List villages in a district</td><td><a href="/api/villages/1101010.json">view</a></td></tr>
+        <tr><td><code>/api/province/{id}.json</code></td><td>Single province</td><td><a href="/api/province/11.json">view</a></td></tr>
+        <tr><td><code>/api/regency/{id}.json</code></td><td>Single regency</td><td><a href="/api/regency/1101.json">view</a></td></tr>
+        <tr><td><code>/api/district/{id}.json</code></td><td>Single district</td><td><a href="/api/district/1101010.json">view</a></td></tr>
+        <tr><td><code>/api/village/{id}.json</code></td><td>Single village</td><td><a href="/api/village/1101010001.json">view</a></td></tr>
+        <tr><td><code>/api/meta.json</code></td><td>Build metadata</td><td><a href="/api/meta.json">view</a></td></tr>
+        <tr><td><code>/api/openapi.json</code></td><td>OpenAPI 3.1 spec</td><td><a href="/api/openapi.json">view</a></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="card">
+    <h2>HATEOAS</h2>
+    <p>Single-entity endpoints carry a <code>_links</code> envelope you can follow without manually constructing URLs:</p>
+<pre class="code"><code>{
+  "id": "1101",
+  "province_id": "11",
+  "name": "KABUPATEN SIMEULUE",
+  "_links": {
+    "self":     "/api/regency/1101.json",
+    "parent":   "/api/province/11.json",
+    "children": "/api/districts/1101.json"
+  }
+}</code></pre>
+    <p class="sub">List endpoints stay byte-compatible with emsifa — no <code>_links</code> per row.</p>
+  </section>
+
+</main>
+
+<footer>
+  <div class="container">
+    <p>MIT licensed. Data attributed to <a href="https://github.com/emsifa/api-wilayah-indonesia">emsifa</a> (BPS / Kemendagri public sources).
+    Source on <a href="https://github.com/dnahilman/region.id">GitHub</a>.</p>
+  </div>
+</footer>
+
+<script src="/assets/app.js" type="module"></script>
+</body>
+</html>

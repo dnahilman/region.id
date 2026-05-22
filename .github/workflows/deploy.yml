@@ -1,0 +1,79 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/**'
+      - 'web/**'
+      - 'cmd/**'
+      - 'internal/**'
+      - 'go.mod'
+      - 'go.sum'
+      - '.github/workflows/deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+          cache: true
+
+      - name: Compute version
+        id: ver
+        run: |
+          echo "version=0.1.0" >> $GITHUB_OUTPUT
+          echo "commit=${GITHUB_SHA::7}" >> $GITHUB_OUTPUT
+
+      - name: Build region binary
+        run: |
+          go build -ldflags="-s -w \
+            -X github.com/dnahilman/region.id/internal/version.Version=${{ steps.ver.outputs.version }} \
+            -X github.com/dnahilman/region.id/internal/version.Commit=${{ steps.ver.outputs.commit }}" \
+            -o region ./cmd/region
+
+      - name: Validate CSV data
+        run: ./region validate --data ./data --strict
+
+      - name: Generate static API
+        run: |
+          ./region generate \
+            --data ./data \
+            --out ./static \
+            --base-url "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}" \
+            -v
+
+      - name: Inventory
+        run: |
+          echo "Generated $(find static -type f | wc -l) files"
+          du -sh static
+
+      - uses: actions/configure-pages@v4
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./static
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

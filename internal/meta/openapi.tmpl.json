@@ -1,0 +1,154 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "region.id",
+    "version": "{{.Version}}",
+    "description": "Static API for Indonesian administrative regions. Drop-in compatible with emsifa/api-wilayah-indonesia, plus HATEOAS, metadata, and OpenAPI.",
+    "license": { "name": "MIT", "url": "https://opensource.org/licenses/MIT" }
+  },
+  "servers": [
+    { "url": "{{.BaseURL}}", "description": "Static deployment" }
+  ],
+  "paths": {
+    "/api/provinces.json": {
+      "get": {
+        "summary": "List all provinces",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Province" } } } }
+          }
+        }
+      }
+    },
+    "/api/regencies/{provinceId}.json": {
+      "get": {
+        "summary": "List regencies in a province",
+        "parameters": [{ "name": "provinceId", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^[0-9]{2}$" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Regency" } } } }
+          }
+        }
+      }
+    },
+    "/api/districts/{regencyId}.json": {
+      "get": {
+        "summary": "List districts in a regency",
+        "parameters": [{ "name": "regencyId", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^[0-9]{4}$" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/District" } } } }
+          }
+        }
+      }
+    },
+    "/api/villages/{districtId}.json": {
+      "get": {
+        "summary": "List villages in a district",
+        "parameters": [{ "name": "districtId", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^[0-9]{7}$" } }],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": { "application/json": { "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Village" } } } }
+          }
+        }
+      }
+    },
+    "/api/province/{id}.json": {
+      "get": {
+        "summary": "Get one province",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^[0-9]{2}$" } }],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Province" } } } }
+        }
+      }
+    },
+    "/api/regency/{id}.json": {
+      "get": {
+        "summary": "Get one regency",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^[0-9]{4}$" } }],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Regency" } } } }
+        }
+      }
+    },
+    "/api/district/{id}.json": {
+      "get": {
+        "summary": "Get one district",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^[0-9]{7}$" } }],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/District" } } } }
+        }
+      }
+    },
+    "/api/village/{id}.json": {
+      "get": {
+        "summary": "Get one village",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string", "pattern": "^[0-9]{10}$" } }],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Village" } } } }
+        }
+      }
+    },
+    "/api/meta.json": {
+      "get": { "summary": "Build metadata", "responses": { "200": { "description": "OK" } } }
+    },
+    "/api/openapi.json": {
+      "get": { "summary": "This OpenAPI document", "responses": { "200": { "description": "OK" } } }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Links": {
+        "type": "object",
+        "properties": {
+          "self": { "type": "string" },
+          "parent": { "type": "string" },
+          "children": { "type": "string" }
+        }
+      },
+      "Province": {
+        "type": "object",
+        "required": ["id", "name"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[0-9]{2}$" },
+          "name": { "type": "string" },
+          "_links": { "$ref": "#/components/schemas/Links" }
+        }
+      },
+      "Regency": {
+        "type": "object",
+        "required": ["id", "province_id", "name"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[0-9]{4}$" },
+          "province_id": { "type": "string", "pattern": "^[0-9]{2}$" },
+          "name": { "type": "string" },
+          "_links": { "$ref": "#/components/schemas/Links" }
+        }
+      },
+      "District": {
+        "type": "object",
+        "required": ["id", "regency_id", "name"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[0-9]{7}$" },
+          "regency_id": { "type": "string", "pattern": "^[0-9]{4}$" },
+          "name": { "type": "string" },
+          "_links": { "$ref": "#/components/schemas/Links" }
+        }
+      },
+      "Village": {
+        "type": "object",
+        "required": ["id", "district_id", "name"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^[0-9]{10}$" },
+          "district_id": { "type": "string", "pattern": "^[0-9]{7}$" },
+          "name": { "type": "string" },
+          "_links": { "$ref": "#/components/schemas/Links" }
+        }
+      }
+    }
+  }
+}
