@@ -86,23 +86,6 @@
       </tbody>
     </table>
   </section>
-
-  <section class="card">
-    <h2>HATEOAS</h2>
-    <p>Single-entity endpoints carry a <code>_links</code> envelope you can follow without constructing URLs manually:</p>
-<pre class="code"><code>{
-  "id": "1101",
-  "province_id": "11",
-  "name": "KABUPATEN SIMEULUE",
-  "_links": {
-    "self":     "/api/regency/1101.json",
-    "parent":   "/api/province/11.json",
-    "children": "/api/districts/1101.json"
-  }
-}</code></pre>
-    <p class="sub">List endpoints omit <code>_links</code> per row to keep array responses compact.</p>
-  </section>
-
 </main>
 
 <footer>
