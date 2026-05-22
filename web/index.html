@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>region.id — Static API for Indonesian regions</title>
-  <meta name="description" content="Static API for Indonesian administrative regions: provinces, regencies, districts, villages. Go rewrite of emsifa/api-wilayah-indonesia with HATEOAS, OpenAPI, and a modern playground." />
+  <meta name="description" content="Static API for Indonesian administrative regions: provinces, regencies, districts, and villages. Served as plain JSON files with HATEOAS links and an OpenAPI spec." />
   <meta name="color-scheme" content="light dark" />
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='8' fill='%23dc2626'/%3E%3Crect y='8' width='16' height='8' fill='white'/%3E%3C/svg%3E" />
   <link rel="stylesheet" href="assets/app.css" />
@@ -21,8 +21,7 @@
     <h1>Static API for <span class="accent">Indonesian regions</span>.</h1>
     <p class="lede">
       Provinces → regencies → districts → villages, served as plain JSON files from a CDN.
-      Drop-in compatible with <a href="https://github.com/emsifa/api-wilayah-indonesia" rel="noopener">emsifa/api-wilayah-indonesia</a>,
-      plus HATEOAS links, OpenAPI, validation, and this playground.
+      No backend, no rate limits — just fetch and use.
     </p>
     <p class="stats" id="stats" aria-live="polite">
       <span class="stat"><strong>34</strong> provinces</span>
@@ -33,7 +32,7 @@
     <p class="cta">
       <a class="btn btn-primary" href="#playground">Try it</a>
       <a class="btn" href="#endpoints">Endpoints</a>
-      <a class="btn btn-ghost" href="/api/openapi.json">OpenAPI ↗</a>
+      <a class="btn btn-ghost" href="api/openapi.json">OpenAPI ↗</a>
     </p>
   </div>
 </header>
@@ -73,23 +72,23 @@
     <table class="endpoints">
       <thead><tr><th>Path</th><th>Description</th><th>Example</th></tr></thead>
       <tbody>
-        <tr><td><code>/api/provinces.json</code></td><td>List all provinces</td><td><a href="/api/provinces.json">view</a></td></tr>
-        <tr><td><code>/api/regencies/{provinceId}.json</code></td><td>List regencies in a province</td><td><a href="/api/regencies/11.json">view</a></td></tr>
-        <tr><td><code>/api/districts/{regencyId}.json</code></td><td>List districts in a regency</td><td><a href="/api/districts/1101.json">view</a></td></tr>
-        <tr><td><code>/api/villages/{districtId}.json</code></td><td>List villages in a district</td><td><a href="/api/villages/1101010.json">view</a></td></tr>
-        <tr><td><code>/api/province/{id}.json</code></td><td>Single province</td><td><a href="/api/province/11.json">view</a></td></tr>
-        <tr><td><code>/api/regency/{id}.json</code></td><td>Single regency</td><td><a href="/api/regency/1101.json">view</a></td></tr>
-        <tr><td><code>/api/district/{id}.json</code></td><td>Single district</td><td><a href="/api/district/1101010.json">view</a></td></tr>
-        <tr><td><code>/api/village/{id}.json</code></td><td>Single village</td><td><a href="/api/village/1101010001.json">view</a></td></tr>
-        <tr><td><code>/api/meta.json</code></td><td>Build metadata</td><td><a href="/api/meta.json">view</a></td></tr>
-        <tr><td><code>/api/openapi.json</code></td><td>OpenAPI 3.1 spec</td><td><a href="/api/openapi.json">view</a></td></tr>
+        <tr><td><code>/api/provinces.json</code></td><td>List all provinces</td><td><a href="api/provinces.json">view</a></td></tr>
+        <tr><td><code>/api/regencies/{provinceId}.json</code></td><td>List regencies in a province</td><td><a href="api/regencies/11.json">view</a></td></tr>
+        <tr><td><code>/api/districts/{regencyId}.json</code></td><td>List districts in a regency</td><td><a href="api/districts/1101.json">view</a></td></tr>
+        <tr><td><code>/api/villages/{districtId}.json</code></td><td>List villages in a district</td><td><a href="api/villages/1101010.json">view</a></td></tr>
+        <tr><td><code>/api/province/{id}.json</code></td><td>Single province</td><td><a href="api/province/11.json">view</a></td></tr>
+        <tr><td><code>/api/regency/{id}.json</code></td><td>Single regency</td><td><a href="api/regency/1101.json">view</a></td></tr>
+        <tr><td><code>/api/district/{id}.json</code></td><td>Single district</td><td><a href="api/district/1101010.json">view</a></td></tr>
+        <tr><td><code>/api/village/{id}.json</code></td><td>Single village</td><td><a href="api/village/1101010001.json">view</a></td></tr>
+        <tr><td><code>/api/meta.json</code></td><td>Build metadata</td><td><a href="api/meta.json">view</a></td></tr>
+        <tr><td><code>/api/openapi.json</code></td><td>OpenAPI 3.1 spec</td><td><a href="api/openapi.json">view</a></td></tr>
       </tbody>
     </table>
   </section>
 
   <section class="card">
     <h2>HATEOAS</h2>
-    <p>Single-entity endpoints carry a <code>_links</code> envelope you can follow without manually constructing URLs:</p>
+    <p>Single-entity endpoints carry a <code>_links</code> envelope you can follow without constructing URLs manually:</p>
 <pre class="code"><code>{
   "id": "1101",
   "province_id": "11",
@@ -100,7 +99,7 @@
     "children": "/api/districts/1101.json"
   }
 }</code></pre>
-    <p class="sub">List endpoints stay byte-compatible with emsifa — no <code>_links</code> per row.</p>
+    <p class="sub">List endpoints omit <code>_links</code> per row to keep array responses compact.</p>
   </section>
 
 </main>
