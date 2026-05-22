@@ -47,7 +47,7 @@ jobs:
             -o region ./cmd/region
 
       - name: Validate CSV data
-        run: ./region validate --data ./data
+        run: ./region validate --data ./data --strict
 
       - name: Generate static API
         run: |
