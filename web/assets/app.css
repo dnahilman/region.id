@@ -53,6 +53,7 @@ code, pre, .url { font-family: ui-monospace, "JetBrains Mono", SFMono-Regular, M
 .brand { display: flex; align-items: center; gap: calc(var(--gap) * 1.5); font-size: 14px; color: var(--fg-muted); margin-bottom: calc(var(--gap) * 4); }
 .brand .name { color: var(--fg); font-weight: 600; }
 .brand .ver { padding: 2px 8px; border: 1px solid var(--border); border-radius: 999px; font-size: 12px; }
+.brand .last-updated { font-size: 12px; color: var(--fg-muted); }
 .flag { width: 18px; height: 12px; border-radius: 2px; background: linear-gradient(180deg, var(--accent) 50%, #fff 50%); border: 1px solid var(--border); display: inline-block; }
 
 h1 { font-size: clamp(28px, 4vw, 42px); line-height: 1.1; margin: 0 0 calc(var(--gap) * 2); letter-spacing: -0.02em; }

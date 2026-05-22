@@ -1,20 +1,21 @@
 // region.id playground — vanilla ES module, no framework.
-//
-// Talks to the same origin's /api/* tree. The UI builds cascading dropdowns
-// for endpoints that take an ID, lazy-fetching child lists when a parent is
-// picked. JSON syntax highlight is a small hand-rolled regex pass.
+// Talks to the same origin's /api/* tree. SITE is computed from import.meta.url
+// so the playground works both at a subpath (GitHub Pages) and at root.
 
 const $ = (sel) => document.querySelector(sel);
 
+// Derive site root from where this script lives: assets/app.js → site root
+const SITE = new URL('..', import.meta.url).href.replace(/\/$/, '');
+
 const ENDPOINTS = [
-  { id: "provinces",     path: "/api/provinces.json",                    params: [] },
-  { id: "regencies",     path: "/api/regencies/{provinceId}.json",       params: ["provinceId"] },
-  { id: "districts",     path: "/api/districts/{regencyId}.json",        params: ["provinceId", "regencyId"] },
-  { id: "villages",      path: "/api/villages/{districtId}.json",        params: ["provinceId", "regencyId", "districtId"] },
-  { id: "province",      path: "/api/province/{id}.json",                params: ["provinceId"], idAlias: { provinceId: "id" } },
-  { id: "regency",       path: "/api/regency/{id}.json",                 params: ["provinceId", "regencyId"], idAlias: { regencyId: "id" } },
-  { id: "district",      path: "/api/district/{id}.json",                params: ["provinceId", "regencyId", "districtId"], idAlias: { districtId: "id" } },
-  { id: "village",       path: "/api/village/{id}.json",                 params: ["provinceId", "regencyId", "districtId", "villageId"], idAlias: { villageId: "id" } },
+  { id: "provinces", path: "/api/provinces.json",              params: [] },
+  { id: "regencies", path: "/api/regencies/{provinceId}.json", params: ["provinceId"] },
+  { id: "districts", path: "/api/districts/{regencyId}.json",  params: ["provinceId", "regencyId"] },
+  { id: "villages",  path: "/api/villages/{districtId}.json",  params: ["provinceId", "regencyId", "districtId"] },
+  { id: "province",  path: "/api/province/{id}.json",          params: ["provinceId"],                              idAlias: { provinceId: "id" } },
+  { id: "regency",   path: "/api/regency/{id}.json",           params: ["provinceId", "regencyId"],                 idAlias: { regencyId: "id" } },
+  { id: "district",  path: "/api/district/{id}.json",          params: ["provinceId", "regencyId", "districtId"],   idAlias: { districtId: "id" } },
+  { id: "village",   path: "/api/village/{id}.json",           params: ["provinceId", "regencyId", "districtId", "villageId"], idAlias: { villageId: "id" } },
 ];
 
 const state = {
@@ -23,27 +24,30 @@ const state = {
   regencyId: "",
   districtId: "",
   villageId: "",
-  // cache: { [path]: payload }
   cache: new Map(),
 };
 
+// Resolve a canonical path (e.g. /api/provinces.json) against SITE.
+function apiURL(path) {
+  return SITE + path;
+}
+
 async function fetchJSON(path) {
-  if (state.cache.has(path)) return state.cache.get(path);
-  const r = await fetch(path);
+  const url = apiURL(path);
+  if (state.cache.has(url)) return state.cache.get(url);
+  const r = await fetch(url);
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
   const data = await r.json();
-  state.cache.set(path, data);
+  state.cache.set(url, data);
   return data;
 }
 
-function buildURL(ep) {
+function buildPath(ep) {
   let p = ep.path;
-  // {id} aliases — last segment of the params chain becomes the id substitution.
   const alias = ep.idAlias || {};
   for (const key of ep.params) {
     const realKey = alias[key] || key;
-    const value = state[key] || "";
-    p = p.replace(`{${realKey}}`, value);
+    p = p.replace(`{${realKey}}`, state[key] || "");
   }
   return p;
 }
@@ -69,7 +73,6 @@ function renderParams() {
   for (const key of state.endpoint.params) {
     row.appendChild(makeParamField(key));
   }
-  // Populate cascades.
   populateProvinces();
   if (state.provinceId) populateRegencies();
   if (state.regencyId) populateDistricts();
@@ -91,17 +94,11 @@ function makeParamField(key) {
 }
 
 function labelFor(key) {
-  return ({
-    provinceId: "Province",
-    regencyId: "Regency",
-    districtId: "District",
-    villageId: "Village",
-  })[key] || key;
+  return ({ provinceId: "Province", regencyId: "Regency", districtId: "District", villageId: "Village" })[key] || key;
 }
 
 function onParamChange(key, value) {
   state[key] = value;
-  // Reset deeper levels.
   const chain = ["provinceId", "regencyId", "districtId", "villageId"];
   const i = chain.indexOf(key);
   for (let j = i + 1; j < chain.length; j++) state[chain[j]] = "";
@@ -114,57 +111,44 @@ function onParamChange(key, value) {
 async function populateProvinces() {
   const sel = $("#sel-provinceId");
   if (!sel) return;
-  try {
-    const data = await fetchJSON("/api/provinces.json");
-    fillSelect(sel, data, state.provinceId);
-  } catch (e) { /* ignore */ }
+  try { fillSelect(sel, await fetchJSON("/api/provinces.json"), state.provinceId); } catch {}
 }
 
 async function populateRegencies() {
   const sel = $("#sel-regencyId");
   if (!sel || !state.provinceId) return;
-  try {
-    const data = await fetchJSON(`/api/regencies/${state.provinceId}.json`);
-    fillSelect(sel, data, state.regencyId);
-  } catch (e) {}
+  try { fillSelect(sel, await fetchJSON(`/api/regencies/${state.provinceId}.json`), state.regencyId); } catch {}
 }
 
 async function populateDistricts() {
   const sel = $("#sel-districtId");
   if (!sel || !state.regencyId) return;
-  try {
-    const data = await fetchJSON(`/api/districts/${state.regencyId}.json`);
-    fillSelect(sel, data, state.districtId);
-  } catch (e) {}
+  try { fillSelect(sel, await fetchJSON(`/api/districts/${state.regencyId}.json`), state.districtId); } catch {}
 }
 
 async function populateVillages() {
   const sel = $("#sel-villageId");
   if (!sel || !state.districtId) return;
-  try {
-    const data = await fetchJSON(`/api/villages/${state.districtId}.json`);
-    fillSelect(sel, data, state.villageId);
-  } catch (e) {}
+  try { fillSelect(sel, await fetchJSON(`/api/villages/${state.districtId}.json`), state.villageId); } catch {}
 }
 
 function fillSelect(sel, list, currentValue) {
-  // Sort by name for a nicer browsing experience.
   list = list.slice().sort((a, b) => a.name.localeCompare(b.name, "id"));
   sel.innerHTML = `<option value="">— pilih (${list.length}) —</option>` +
     list.map(x => `<option value="${x.id}"${x.id === currentValue ? " selected" : ""}>${x.name} (${x.id})</option>`).join("");
 }
 
 function updateURL() {
-  const u = buildURL(state.endpoint);
-  $("#url").textContent = u;
+  $("#url").textContent = buildPath(state.endpoint);
 }
 
 async function send() {
-  const url = buildURL(state.endpoint);
+  const path = buildPath(state.endpoint);
+  const url = apiURL(path);
   const t0 = performance.now();
   const meta = $("#meta");
   const out = $("#response");
-  out.innerHTML = `<span class="muted">Fetching ${url}…</span>`;
+  out.innerHTML = `<span class="muted">Fetching…</span>`;
   meta.textContent = "";
   try {
     const r = await fetch(url);
@@ -173,11 +157,7 @@ async function send() {
     const bytes = new Blob([text]).size;
     meta.textContent = `${r.status} ${r.statusText} · ${ms} ms · ${formatBytes(bytes)}`;
     let pretty;
-    try {
-      pretty = JSON.stringify(JSON.parse(text), null, 2);
-    } catch {
-      pretty = text;
-    }
+    try { pretty = JSON.stringify(JSON.parse(text), null, 2); } catch { pretty = text; }
     out.innerHTML = highlight(pretty);
   } catch (e) {
     out.innerHTML = `<span class="muted">Error: ${e.message}</span>`;
@@ -191,13 +171,9 @@ function formatBytes(n) {
 }
 
 function highlight(text) {
-  // Escape HTML first.
   text = text.replace(/[&<>]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[ch]));
-  // Strings (including keys).
-  text = text.replace(/"([^"\\]|\\.)*"(\s*:)?/g, (m, _g, colon) => {
-    return colon ? `<span class="tok-key">${m}</span>` : `<span class="tok-str">${m}</span>`;
-  });
-  // Numbers / booleans / null.
+  text = text.replace(/"([^"\\]|\\.)*"(\s*:)?/g, (m, _g, colon) =>
+    colon ? `<span class="tok-key">${m}</span>` : `<span class="tok-str">${m}</span>`);
   text = text.replace(/\b-?\d+(\.\d+)?\b/g, m => `<span class="tok-num">${m}</span>`);
   text = text.replace(/\b(true|false)\b/g, m => `<span class="tok-bool">${m}</span>`);
   text = text.replace(/\bnull\b/g, m => `<span class="tok-null">${m}</span>`);
@@ -205,9 +181,8 @@ function highlight(text) {
 }
 
 function copyCurl() {
-  const u = new URL(buildURL(state.endpoint), location.origin).toString();
-  const cmd = `curl ${u}`;
-  navigator.clipboard.writeText(cmd).then(
+  const url = apiURL(buildPath(state.endpoint));
+  navigator.clipboard.writeText(`curl ${url}`).then(
     () => { $("#meta").textContent = "Copied!"; setTimeout(() => $("#meta").textContent = "", 1500); },
     () => { $("#meta").textContent = "Copy failed"; }
   );
@@ -216,7 +191,13 @@ function copyCurl() {
 async function loadMeta() {
   try {
     const m = await fetchJSON("/api/meta.json");
-    $("#ver").textContent = `v${m.version}`;
+    const ver = m.version ? `v${m.version}` : "v0.1.0";
+    $("#ver").textContent = ver;
+    if (m.build && m.build.time) {
+      const d = new Date(m.build.time);
+      const fmt = d.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+      $("#last-updated").textContent = `Updated ${fmt}`;
+    }
     if (m.counts) {
       $("#stats").innerHTML = [
         ["provinces", m.counts.provinces],
@@ -224,10 +205,11 @@ async function loadMeta() {
         ["districts", m.counts.districts],
         ["villages",  m.counts.villages],
       ].map(([label, n]) =>
-        `<span class="stat"><strong>${n.toLocaleString("en-US")}</strong> ${label}</span>`).join("");
+        `<span class="stat"><strong>${n.toLocaleString("en-US")}</strong> ${label}</span>`
+      ).join("");
     }
-  } catch (e) {
-    $("#ver").textContent = "static";
+  } catch {
+    $("#ver").textContent = "v0.1.0";
   }
 }
 
